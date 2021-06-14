@@ -18,12 +18,11 @@ Materials :
 
 #include "config.h"   // header include, host and token to Firebase, SSID and password to WiFi connection
 #include <SoftwareSerial.h>  // https://github.com/PaulStoffregen/SoftwareSerial
-#include "FirebaseESP8266.h"	// Install Firebase ESP8266 library
+#include "FirebaseESP8266.h"	// https://github.com/mobizt/Firebase-ESP8266
 #include <ESP8266WiFi.h>
-#include <DS3232RTC.h>      // https://github.com/JChristensen/DS3232RTC
-#include <TimeLib.h>
 #include <OneWire.h>        // https://www.pjrc.com/teensy/td_libs_OneWire.html
 #include <DallasTemperature.h>    // https://github.com/milesburton/Arduino-Temperature-Control-Library
+#include <DS3232RTC.h>      // https://github.com/JChristensen/DS3232RTC
 
 #define FIREBASE_HOST HostFirebase 
 #define FIREBASE_AUTH TokenFirebase
@@ -64,12 +63,9 @@ FirebaseData ledData;
 
 FirebaseJson json;
 
-  float tempC = 17.3;
-  String date = "2021-06-14T02:20:05Z";
+float tempC = 17.3;
+String sensorStatus = "temperature/";
 
-  String pathHeaderTemp = pathHeaderFirebase + "temperature/";
-  String pathTemp = pathHeaderTemp + "s1/" + "average";
-  String pathDate = pathHeaderTemp + "s1/" + "date";
 
 void setup() {
   // pinMode(RTS_pin, OUTPUT);
@@ -84,12 +80,6 @@ void setup() {
   RS485Speed.begin(9600);   
   digitalWrite(Led_pin, LOW);
   
-  setSyncProvider(RTC.get);   // the function to get the time from the RTC
-  if(timeStatus() != timeSet)
-    Serial.println("Unable to sync with the RTC");
-  else
-    Serial.println("RTC has set the system time");
-  
   WiFi.begin(WifiSSID, WifiPASS);
   Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) {
@@ -103,23 +93,29 @@ void setup() {
 
   Firebase.begin(HostFirebase, TokenFirebase);
   Firebase.reconnectWiFi(true);
+
+  setSyncProvider(RTC.get);   // the function to get the time from the RTC
+  if(timeStatus() != timeSet)
+    Serial.println("Unable to sync with the RTC");
+  else
+    Serial.println("RTC has set the system time");
 }
 
 void loop() {
-  
+
   if (Serial.available()) {
     char read = Serial.read();
     if (read == 's') {
+      String pathHeader = pathHeaderFirebase + sensorStatus + longMonth(month());
+      String pathDate = pathHeader + "/" + "s1/" + "date";
+      String date = readDate();
+      String pathTemp = pathHeader + "/" + "s1/" + "value";
+
       if (Firebase.setString(firebaseData, pathDate, date)) {
-        Serial.println("PASSED_Date");
+        Serial.println("PATH_DATE: " + firebaseData.dataPath());
       }
       if (Firebase.setFloat(firebaseData, pathTemp, tempC)) {
-        Serial.println("PASSED");
         Serial.println("PATH_TEMP: " + firebaseData.dataPath());
-        Serial.println("TYPE: " + firebaseData.dataType());
-        Serial.println("ETag: " + firebaseData.ETag());
-        Serial.println("------------------------------------");
-        Serial.println();
       }
       else {
         Serial.println("FAILED");
@@ -131,4 +127,46 @@ void loop() {
   }
 }
 
+String readDate () {
+  String date = String(year()) + "-" + isOneDigit(month()) + "-" + isOneDigit(day());
+  String time = isOneDigit(hour()) + ":" + isOneDigit(minute()) + ":" + isOneDigit(second());
+  String UTC = date + "T" + time + "Z";
+  return UTC;
+}
 
+String longMonth (int month) {
+  switch (month) {
+    case 1:
+      return "january";
+    case 2:
+      return "february";
+    case 3:
+      return "march";
+    case 4:
+      return "abril";
+    case 5:
+      return "may";
+    case 6:
+      return "june";
+    case 7:
+      return "july";
+    case 8:
+      return "august";
+    case 9:
+      return "september";
+    case 10:
+      return "october";
+    case 11:
+      return "november";
+    case 12:
+      return "december";
+  }
+}
+
+String isOneDigit(int digit) {
+  String value = String(digit);
+  if(digit < 10)
+    value = "0" + value;
+
+  return value;
+}
