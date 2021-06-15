@@ -23,6 +23,11 @@ Materials :
 #include <OneWire.h>        // https://www.pjrc.com/teensy/td_libs_OneWire.html
 #include <DallasTemperature.h>    // https://github.com/milesburton/Arduino-Temperature-Control-Library
 #include <DS3232RTC.h>      // https://github.com/JChristensen/DS3232RTC
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_BME280.h>
+#include <Adafruit_Sensor.h>
+
 
 #define FIREBASE_HOST HostFirebase 
 #define FIREBASE_AUTH TokenFirebase
@@ -41,6 +46,7 @@ String pathHeaderFirebase = "/station-home/";
 
 
 SoftwareSerial RS485Speed(RX, TX);
+Adafruit_BME280 bme; // I2C
 
 // Setup RTC
 DS3232RTC RTC;
@@ -99,6 +105,12 @@ void setup() {
     Serial.println("Unable to sync with the RTC");
   else
     Serial.println("RTC has set the system time");
+
+  if (!bme.begin()) {
+    Serial.println(F("Could not find a valid BMP280 sensor, check wiring or try a different address!"));
+    while (1) delay(10);
+  }
+
 }
 
 void loop() {
@@ -125,6 +137,23 @@ void loop() {
       }
     }
   }
+
+  Serial.print(F("Temperature = "));
+  Serial.print(bme.readTemperature());
+  Serial.println(" *C");
+
+  Serial.print(F("Pressure = "));
+  Serial.print(bme.readPressure());
+  Serial.println(" Pa");
+
+  Serial.print(F("Approx altitude = "));
+  Serial.print(bme.readAltitude(1013.25)); /* Adjusted to local forecast! */
+  Serial.println(" m");
+  Serial.print("Humidity = ");
+  Serial.print(bme.readHumidity());
+  Serial.println(" %");
+  Serial.println();
+  delay(2000);
 }
 
 String readDate () {
