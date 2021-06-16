@@ -106,7 +106,7 @@ void setup() {
   else
     Serial.println("RTC has set the system time");
 
-  if (!bme.begin()) {
+  if (! bme.begin(0x76, &Wire)) {
     Serial.println(F("Could not find a valid BMP280 sensor, check wiring or try a different address!"));
     while (1) delay(10);
   }
@@ -140,7 +140,7 @@ void loop() {
 
   Serial.print(F("Temperature = "));
   Serial.print(bme.readTemperature());
-  Serial.println(" *C");
+  Serial.println(" °C");
 
   Serial.print(F("Pressure = "));
   Serial.print(bme.readPressure());
