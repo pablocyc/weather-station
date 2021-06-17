@@ -17,6 +17,7 @@ Materials :
 */
 
 #include "config.h"   // header include, host and token to Firebase, SSID and password to WiFi connection
+#include <EEPROM.h>
 #include <SoftwareSerial.h>  // https://github.com/PaulStoffregen/SoftwareSerial
 #include "FirebaseESP8266.h"	// https://github.com/mobizt/Firebase-ESP8266
 #include <ESP8266WiFi.h>
@@ -43,6 +44,8 @@ Materials :
 #define RS485Receive     LOW
 
 // Global Variables
+// EEPROM -> [month, st, sh, sp, ss, sd]
+byte EEmonth = 0, EEst = 1, EEsh = 2, EEsp = 3, EEss = 4, EEsd = 5;
 String pathHeaderFirebase = "/station-home/";
 String pathTemp = "temperature/";
 String pathHum = "humidity/";
@@ -51,8 +54,8 @@ String pathSpeed = "wind_speed/";
 String pathDirection = "wind_direction/";
 bool h12Flag, pmFlag;
 bool century = false;
-long st, sh, sp, ss, sd;
-int monthOld;
+int st, sh, sp, ss, sd;
+byte monthOld;
 float tempOld;
 float humOld;
 float pressOld;
@@ -87,8 +90,23 @@ FirebaseJson json;
 float tempC = 0;
 // String sensorStatus = "temperature/";
 
+void readEEPROM () {
+  EEPROM.get(EEst, st);
+  EEPROM.get(EEsh, sh);
+  EEPROM.get(EEsp, sp);
+  EEPROM.get(EEss, ss);
+  EEPROM.get(EEsd, sd);
+  EEPROM.get(EEmonth, monthOld);
+  Serial.println(st);
+  Serial.println(sh);
+  Serial.println(sp);
+  Serial.println(ss);
+  Serial.println(sd);
+  Serial.println(monthOld);
+}
 
 void setup() {
+  EEPROM.begin(16);
   // pinMode(RTS_pin, OUTPUT);
   // pinMode(RTS2_pin, OUTPUT);
   pinMode(Led_pin, OUTPUT);
@@ -115,10 +133,11 @@ void setup() {
   Firebase.begin(HostFirebase, TokenFirebase);
   Firebase.reconnectWiFi(true);
 
+  readEEPROM();
   // Start the I2C interface
 	Wire.begin();
 
-  if (! bme.begin(0x76, &Wire)) {
+  if (!bme.begin(0x76, &Wire)) {
     Serial.println(F("Could not find a valid BMP280 sensor, check wiring or try a different address!"));
     while (1) delay(10);
   }
@@ -126,25 +145,46 @@ void setup() {
 }
 
 void loop() {
+  if (Serial.available()) {
+    char read = Serial.read();
+    if (read == 'r') {
+      EEPROM.put(EEst, 0);
+      EEPROM.put(EEsh, 0);
+      EEPROM.put(EEsp, 0);
+      EEPROM.put(EEss, 0);
+      EEPROM.put(EEsd, 0);
+      EEPROM.put(EEmonth, 6);
+      bool ok = EEPROM.commit();
+      Serial.println((ok) ? "Commit OK" : "Commit failed");
+      Serial.println("--------RESET EEPROM------------");
+      readEEPROM();
+    }
+  }
 
   float diff, read;
   read = bme.readTemperature();
   diff = abs(read - tempOld);
-  if ((read != tempOld) && (diff >= 0.2)) {
+  if ((read != tempOld) && (diff >= 0.14)) {
     tempOld = read;
     sendFirebase(st++, pathTemp, read);
+    EEPROM.put(EEst, st);
+    EEPROM.commit();
   }
   read = bme.readHumidity();
   diff = abs(read - humOld);
-  if ((read != humOld) && (diff >= 1)) {
+  if ((read != humOld) && (diff >= 1.6)) {
     humOld = read;
     sendFirebase(sh++, pathHum, read);
+    EEPROM.put(EEsh, sh);
+    EEPROM.commit();
   }
   read = bme.readPressure();
   diff = abs(read - pressOld);
-  if ((read != pressOld) && (diff >= 10)) {
+  if ((read != pressOld) && (diff >= 12)) {
     pressOld = read;
     sendFirebase(sp++, pathPress, read);
+    EEPROM.put(EEsp, sp);
+    EEPROM.commit();
   }
   
 
@@ -170,7 +210,15 @@ void sendFirebase (long sample, String path, float value) {
   int month = RTC.getMonth(century);
   if (month != monthOld) {
     monthOld = month;
+    EEPROM.put(EEmonth, monthOld);
     st, sh, sp, ss, sd = 0;
+    EEPROM.put(EEst, st);
+    EEPROM.put(EEsh, sh);
+    EEPROM.put(EEsp, sp);
+    EEPROM.put(EEss, ss);
+    EEPROM.put(EEsd, sd);
+    bool ok = EEPROM.commit();
+    Serial.println((ok) ? "Commit OK" : "Commit failed");
   }
   String pathHeader = pathHeaderFirebase + longMonth(month) + "/" + path + sample + "/";
   String date = readDate();
