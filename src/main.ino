@@ -44,8 +44,20 @@ Materials :
 
 // Global Variables
 String pathHeaderFirebase = "/station-home/";
+String pathTemp = "temperature/";
+String pathHum = "humidity/";
+String pathPress = "pressure/";
+String pathSpeed = "wind_speed/";
+String pathDirection = "wind_direction/";
 bool h12Flag, pmFlag;
 bool century = false;
+long st, sh, sp, ss, sd;
+int monthOld;
+float tempOld;
+float humOld;
+float pressOld;
+float speedOld;
+float directionOld;
 
 
 SoftwareSerial RS485Speed(RX, TX);
@@ -72,8 +84,8 @@ FirebaseData ledData;
 
 FirebaseJson json;
 
-float tempC = 17.3;
-String sensorStatus = "temperature/";
+float tempC = 0;
+// String sensorStatus = "temperature/";
 
 
 void setup() {
@@ -115,28 +127,26 @@ void setup() {
 
 void loop() {
 
-  if (Serial.available()) {
-    char read = Serial.read();
-    if (read == 's') {
-      String pathHeader = pathHeaderFirebase + sensorStatus + longMonth(RTC.getMonth(century));
-      String pathDate = pathHeader + "/" + "s1/" + "date";
-      String date = readDate();
-      String pathTemp = pathHeader + "/" + "s1/" + "value";
-
-      if (Firebase.setString(firebaseData, pathDate, date)) {
-        Serial.println("PATH_DATE: " + firebaseData.dataPath());
-      }
-      if (Firebase.setFloat(firebaseData, pathTemp, tempC)) {
-        Serial.println("PATH_TEMP: " + firebaseData.dataPath());
-      }
-      else {
-        Serial.println("FAILED");
-        Serial.println("REASON: " + firebaseData.errorReason());
-        Serial.println("------------------------------------");
-        Serial.println();
-      }
-    }
+  float diff, read;
+  read = bme.readTemperature();
+  diff = abs(read - tempOld);
+  if ((read != tempOld) && (diff >= 0.2)) {
+    tempOld = read;
+    sendFirebase(st++, pathTemp, read);
   }
+  read = bme.readHumidity();
+  diff = abs(read - humOld);
+  if ((read != humOld) && (diff >= 1)) {
+    humOld = read;
+    sendFirebase(sh++, pathHum, read);
+  }
+  read = bme.readPressure();
+  diff = abs(read - pressOld);
+  if ((read != pressOld) && (diff >= 10)) {
+    pressOld = read;
+    sendFirebase(sp++, pathPress, read);
+  }
+  
 
   Serial.print(F("Temperature = "));
   Serial.print(bme.readTemperature());
@@ -154,6 +164,31 @@ void loop() {
   Serial.println(" %");
   Serial.println();
   delay(2000);
+}
+
+void sendFirebase (long sample, String path, float value) {
+  int month = RTC.getMonth(century);
+  if (month != monthOld) {
+    monthOld = month;
+    st, sh, sp, ss, sd = 0;
+  }
+  String pathHeader = pathHeaderFirebase + longMonth(month) + "/" + path + sample + "/";
+  String date = readDate();
+  String pathDate = pathHeader + "date";
+  String pathValue = pathHeader + "value";
+
+  if (Firebase.setString(firebaseData, pathDate, date)) {
+    Serial.println("PATH_DATE: " + firebaseData.dataPath());
+  }
+  if (Firebase.setFloat(firebaseData, pathValue, value)) {
+    Serial.println("PATH_TEMP: " + firebaseData.dataPath());
+  }
+  else {
+    Serial.println("FAILED");
+    Serial.println("REASON: " + firebaseData.errorReason());
+    Serial.println("------------------------------------");
+    Serial.println();
+  }
 }
 
 String readDate () {
