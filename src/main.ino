@@ -22,7 +22,7 @@ Materials :
 #include <ESP8266WiFi.h>
 #include <OneWire.h>        // https://www.pjrc.com/teensy/td_libs_OneWire.html
 #include <DallasTemperature.h>    // https://github.com/milesburton/Arduino-Temperature-Control-Library
-#include <DS3232RTC.h>      // https://github.com/JChristensen/DS3232RTC
+#include <DS3231.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_BME280.h>
@@ -42,14 +42,17 @@ Materials :
 #define RS485Transmit    HIGH
 #define RS485Receive     LOW
 
+// Global Variables
 String pathHeaderFirebase = "/station-home/";
+bool h12Flag, pmFlag;
+bool century = false;
 
 
 SoftwareSerial RS485Speed(RX, TX);
 Adafruit_BME280 bme; // I2C
 
 // Setup RTC
-DS3232RTC RTC;
+DS3231 RTC;
 
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
@@ -100,11 +103,8 @@ void setup() {
   Firebase.begin(HostFirebase, TokenFirebase);
   Firebase.reconnectWiFi(true);
 
-  setSyncProvider(RTC.get);   // the function to get the time from the RTC
-  if(timeStatus() != timeSet)
-    Serial.println("Unable to sync with the RTC");
-  else
-    Serial.println("RTC has set the system time");
+  // Start the I2C interface
+	Wire.begin();
 
   if (! bme.begin(0x76, &Wire)) {
     Serial.println(F("Could not find a valid BMP280 sensor, check wiring or try a different address!"));
@@ -118,7 +118,7 @@ void loop() {
   if (Serial.available()) {
     char read = Serial.read();
     if (read == 's') {
-      String pathHeader = pathHeaderFirebase + sensorStatus + longMonth(month());
+      String pathHeader = pathHeaderFirebase + sensorStatus + longMonth(RTC.getMonth(century));
       String pathDate = pathHeader + "/" + "s1/" + "date";
       String date = readDate();
       String pathTemp = pathHeader + "/" + "s1/" + "value";
@@ -157,8 +157,8 @@ void loop() {
 }
 
 String readDate () {
-  String date = String(year()) + "-" + isOneDigit(month()) + "-" + isOneDigit(day());
-  String time = isOneDigit(hour()) + ":" + isOneDigit(minute()) + ":" + isOneDigit(second());
+  String date = "20" + String(RTC.getYear()) + "-" + isOneDigit(RTC.getMonth(century)) + "-" + isOneDigit(RTC.getDate());
+  String time = isOneDigit(RTC.getHour(h12Flag, pmFlag)) + ":" + isOneDigit(RTC.getMinute()) + ":" + isOneDigit(RTC.getSecond());
   String UTC = date + "T" + time + "Z";
   return UTC;
 }
