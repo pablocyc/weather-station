@@ -45,7 +45,7 @@ Materials :
 
 // Global Variables
 // EEPROM -> [month, st, sh, sp, ss, sd]
-byte EEmonth = 0, EEst = 1, EEsh = 2, EEsp = 3, EEss = 4, EEsd = 5;
+byte EEmonth = 20, EEst = 21, EEsh = 22, EEsp = 23, EEss = 24, EEsd = 25;
 String pathHeaderFirebase = "/station-home/";
 String pathTemp = "temperature/";
 String pathHum = "humidity/";
@@ -106,7 +106,7 @@ void readEEPROM () {
 }
 
 void setup() {
-  EEPROM.begin(16);
+  EEPROM.begin(32);
   // pinMode(RTS_pin, OUTPUT);
   // pinMode(RTS2_pin, OUTPUT);
   pinMode(Led_pin, OUTPUT);
@@ -147,6 +147,7 @@ void setup() {
 void loop() {
   if (Serial.available()) {
     char read = Serial.read();
+    // Reset EEPROM
     if (read == 'r') {
       EEPROM.put(EEst, 0);
       EEPROM.put(EEsh, 0);
@@ -163,46 +164,42 @@ void loop() {
 
   float diff, read;
   read = bme.readTemperature();
-  diff = abs(read - tempOld);
-  if ((read != tempOld) && (diff >= 0.14)) {
+  Serial.print(F("Temperature = "));
+  Serial.print(read);
+  Serial.println(" °C");
+  diff = read - tempOld;
+  Serial.println(diff);
+  if (diff < 0) diff *= -1;
+  if ((read != tempOld) && (diff >= 0.17) ) {
     tempOld = read;
     sendFirebase(st++, pathTemp, read);
     EEPROM.put(EEst, st);
     EEPROM.commit();
   }
   read = bme.readHumidity();
-  diff = abs(read - humOld);
-  if ((read != humOld) && (diff >= 1.6)) {
+  Serial.print("Humidity = ");
+  Serial.print(read);
+  Serial.println(" %");
+  diff = read - humOld;
+  if (diff < 0) diff *= -1;
+  if ((read != humOld) && (diff >= 1.9)) {
     humOld = read;
     sendFirebase(sh++, pathHum, read);
     EEPROM.put(EEsh, sh);
     EEPROM.commit();
   }
   read = bme.readPressure();
-  diff = abs(read - pressOld);
-  if ((read != pressOld) && (diff >= 12)) {
+  Serial.print(F("Pressure = "));
+  Serial.print(read);
+  Serial.println(" Pa");
+  diff = read - pressOld;
+  if (diff < 0) diff *= -1;
+  if ((read != pressOld) && (diff >= 32)) {
     pressOld = read;
     sendFirebase(sp++, pathPress, read);
     EEPROM.put(EEsp, sp);
     EEPROM.commit();
   }
-  
-
-  Serial.print(F("Temperature = "));
-  Serial.print(bme.readTemperature());
-  Serial.println(" °C");
-
-  Serial.print(F("Pressure = "));
-  Serial.print(bme.readPressure());
-  Serial.println(" Pa");
-
-  Serial.print(F("Approx altitude = "));
-  Serial.print(bme.readAltitude(1013.25)); /* Adjusted to local forecast! */
-  Serial.println(" m");
-  Serial.print("Humidity = ");
-  Serial.print(bme.readHumidity());
-  Serial.println(" %");
-  Serial.println();
   delay(2000);
 }
 
