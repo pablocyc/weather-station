@@ -14,6 +14,7 @@ Estación Meterológica, integrando sensores de velocidad y dirección de viento
 ## Configuration
 | Type          | Pin           | Description           |
 | ------------- |:-------------:| ---------------------:|
+| Output        |   D0          | RS485 Controller      |
 | SCL           |   D1          | I2C communication     |
 | SDA           |   D2          | I2C communication     |
 | Input/Output  |   D3          | OneWire Bus           |
@@ -22,8 +23,6 @@ Estación Meterológica, integrando sensores de velocidad y dirección de viento
 | TX1           |   D6          | Serial Transmit pin   |
 | RX2           |   D7          | Serial Recive pin     |
 | TX2           |   D8          | Serial Transmit pin   |
-| Output        |   GPIO9       | RS485 Controller      |
-| Output        |   GPIO10      | RS485 Controller      |
 
 
 ## External libraries

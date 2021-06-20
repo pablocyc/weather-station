@@ -37,6 +37,8 @@ Materials :
 #define ONE_WIRE_BUS  D3    // Data wire
 #define RX            D5    //Serial Receive pin
 #define TX            D6    //Serial Transmit pin
+#define RX2           D7    //Serial Receive pin
+#define TX2           D8    //Serial Transmit pin
 #define RTS_pin       D0    //RS485 Direction control
 #define RTS2_pin      10    //RS485 Direction control
 #define Led_pin       D4    //LED
@@ -64,6 +66,7 @@ float directionOld;
 
 
 SoftwareSerial RS485Serial(RX, TX);
+SoftwareSerial RS485Serial2(RX2, TX2);
 Adafruit_BME280 bme; // I2C
 
 // Setup RTC
@@ -117,6 +120,7 @@ void setup() {
 
   // Start the Modbus serial Port, for anemometer
   RS485Serial.begin(9600);   
+  RS485Serial2.begin(9600);    // RS485Serial to Wind Direction.
   digitalWrite(Led_pin, LOW);
   
   WiFi.begin(WifiSSID, WifiPASS);
@@ -167,7 +171,7 @@ void loop() {
   read = bme.readTemperature();
   diff = read - tempOld;
   if (diff < 0) diff *= -1;
-  if ((read != tempOld) && (diff >= 0.17) ) {
+  if ((read != tempOld) && (diff >= 0.21) ) {
     tempOld = read;
     sendFirebase(st++, pathTemp, read);
     EEPROM.put(EEst, st);
@@ -185,7 +189,7 @@ void loop() {
   read = bme.readPressure();
   diff = read - pressOld;
   if (diff < 0) diff *= -1;
-  if ((read != pressOld) && (diff >= 32)) {
+  if ((read != pressOld) && (diff >= 33)) {
     pressOld = read;
     sendFirebase(sp++, pathPress, read);
     EEPROM.put(EEsp, sp);
@@ -196,21 +200,51 @@ void loop() {
 
 
 void readWind () {
+  int diff;
   digitalWrite(RTS_pin, RS485Transmit);
   byte Anemometer_request[] = {0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x39};
   RS485Serial.write(Anemometer_request, sizeof(Anemometer_request));
   RS485Serial.flush();
+
   digitalWrite(RTS_pin, RS485Receive);
   byte Anemometer_buf[8];
   RS485Serial.readBytes(Anemometer_buf, 8);
+  diff = Anemometer_buf[4] - speedOld;
+  if (diff < 0) diff *= -1;
 
-  if (Anemometer_buf[4] != speedOld) {
+  if ((Anemometer_buf[4] != speedOld) && (diff >= 3)) {
     speedOld = Anemometer_buf[4];
     sendFirebase(ss++, pathSpeed, Anemometer_buf[4] * 3.6); // Convert speed m/s to km/h
     EEPROM.put(EEss, ss);
     EEPROM.commit();
   }
-  Serial.println();
+
+  digitalWrite(RTS_pin, RS485Transmit);
+  RS485Serial2.write(Anemometer_request, sizeof(Anemometer_request));
+  RS485Serial2.flush();
+
+  digitalWrite(RTS_pin, RS485Receive);
+  byte Anemometer_dir_buf[8];
+  RS485Serial2.readBytes(Anemometer_dir_buf, 8);
+
+  float wind_deg;
+  if (Anemometer_dir_buf[3] > 0) {
+    wind_deg = 256 + Anemometer_dir_buf[4];
+  }
+  else {
+    wind_deg = Anemometer_dir_buf[4];
+  }
+  diff = wind_deg - directionOld;
+  if (diff < 0) diff *= -1;
+  if ((wind_deg != directionOld) && (diff >= 4)) {
+    directionOld = wind_deg;
+    sendFirebase(sd++, pathDirection, wind_deg);
+    EEPROM.put(EEsd, sd);
+    EEPROM.commit();
+    Serial.print("WindDir - Send: ");
+    Serial.println(wind_deg);
+    Serial.println();
+  }
 }
 
 void sendFirebase (long sample, String path, float value) {
