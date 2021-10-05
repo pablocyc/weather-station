@@ -169,6 +169,7 @@ void loop() {
   }
 
   if (millis() - currentTime > deltaTime) {
+    currentTime = millis();
     readWind();
     float diff, read;
     read = bme.readTemperature();
