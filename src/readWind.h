@@ -1,1 +1,1 @@
-void readWind ();
+void ReadWind ();

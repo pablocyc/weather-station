@@ -8,6 +8,6 @@
 #include <Wire.h>
 #include <SPI.h>
 
-void readWind () {
+void ReadWind () {
   Serial.println("Not implemented");
 }
