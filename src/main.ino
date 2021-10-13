@@ -320,6 +320,7 @@ String longMonth (int month) {
     case 12:
       return "december";
   }
+  return "Month not found!";
 }
 
 String isOneDigit(int digit) {
