@@ -1,4 +1,4 @@
-#include "arduino.h"
+#include "functions.h"
 
 #include <SoftwareSerial.h>  // https://github.com/PaulStoffregen/SoftwareSerial
 #include <ESP8266WiFi.h>

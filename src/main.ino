@@ -16,8 +16,8 @@ Materials :
 1* AHT10 --> Integrated temperature and humidity sensor, i2C
 */
 
+#include "functions.h" //NEW HEADER BY PEDRO
 #include "config.h"   // header include, host and token to Firebase, SSID and password to WiFi connection
-#include "sendDataFB.h" //New include for fireBase connection and send data
 #include <EEPROM.h>
 #include <SoftwareSerial.h>  // https://github.com/PaulStoffregen/SoftwareSerial
 #include "FirebaseESP8266.h"	// https://github.com/mobizt/Firebase-ESP8266
