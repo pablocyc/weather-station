@@ -63,6 +63,8 @@ float humOld;
 float pressOld;
 float speedOld;
 float directionOld;
+unsigned long currentTime;  //actual time for async reading sensors
+unsigned long deltaTime = 2000;  //interval between sensors readings, default 2000ms
 
 
 SoftwareSerial RS485Serial(RX, TX);
@@ -75,14 +77,14 @@ DS3231 RTC;
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 
-// Pass our oneWire reference to Dallas Temperature. 
+// Pass our oneWire reference to Dallas Temperature.
 DallasTemperature sensors(&oneWire);
 
 // Number of temperature devices found
 int numberOfDevices;
 
 // We'll use this variable to store a found device address
-DeviceAddress tempDeviceAddress; 
+DeviceAddress tempDeviceAddress;
 
 //Define FirebaseESP8266 data object
 FirebaseData firebaseData;
@@ -113,16 +115,16 @@ void setup() {
   pinMode(RTS_pin, OUTPUT);
   // pinMode(RTS2_pin, OUTPUT);
   pinMode(Led_pin, OUTPUT);
-  
+
   // Start the built-in serial port, for Serial Monitor
   Serial.begin(115200);
   Serial.println("Weather Station");
 
   // Start the Modbus serial Port, for anemometer
-  RS485Serial.begin(9600);   
+  RS485Serial.begin(9600);
   RS485Serial2.begin(9600);    // RS485Serial to Wind Direction.
   digitalWrite(Led_pin, LOW);
-  
+
   WiFi.begin(WifiSSID, WifiPASS);
   Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) {
@@ -166,36 +168,39 @@ void loop() {
     }
   }
 
-  readWind();
-  float diff, read;
-  read = bme.readTemperature();
-  diff = read - tempOld;
-  if (diff < 0) diff *= -1;
-  if ((read != tempOld) && (diff >= 0.21) ) {
-    tempOld = read;
-    sendFirebase(st++, pathTemp, read);
-    EEPROM.put(EEst, st);
-    EEPROM.commit();
+  if (millis() - currentTime > deltaTime) {
+    currentTime = millis();
+    readWind();
+    float diff, read;
+    read = bme.readTemperature();
+    diff = read - tempOld;
+    if (diff < 0) diff *= -1;
+    if ((read != tempOld) && (diff >= 0.21) ) {
+      tempOld = read;
+      sendFirebase(st++, pathTemp, read);
+      EEPROM.put(EEst, st);
+      EEPROM.commit();
+    }
+    read = bme.readHumidity();
+    diff = read - humOld;
+    if (diff < 0) diff *= -1;
+    if ((read != humOld) && (diff >= 1.9)) {
+      humOld = read;
+      sendFirebase(sh++, pathHum, read);
+      EEPROM.put(EEsh, sh);
+      EEPROM.commit();
+    }
+    read = bme.readPressure();
+    diff = read - pressOld;
+    if (diff < 0) diff *= -1;
+    if ((read != pressOld) && (diff >= 33)) {
+      pressOld = read;
+      sendFirebase(sp++, pathPress, read);
+      EEPROM.put(EEsp, sp);
+      EEPROM.commit();
+    }
+    //delay(2000);
   }
-  read = bme.readHumidity();
-  diff = read - humOld;
-  if (diff < 0) diff *= -1;
-  if ((read != humOld) && (diff >= 1.9)) {
-    humOld = read;
-    sendFirebase(sh++, pathHum, read);
-    EEPROM.put(EEsh, sh);
-    EEPROM.commit();
-  }
-  read = bme.readPressure();
-  diff = read - pressOld;
-  if (diff < 0) diff *= -1;
-  if ((read != pressOld) && (diff >= 33)) {
-    pressOld = read;
-    sendFirebase(sp++, pathPress, read);
-    EEPROM.put(EEsp, sp);
-    EEPROM.commit();
-  }
-  delay(2000);
 }
 
 
