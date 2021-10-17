@@ -218,7 +218,7 @@ void readWind () {
   RS485Serial.readBytes(Anemometer_buf, 8);
   diff = abs(Anemometer_buf[4] - speedOld);
 
-  if ((Anemometer_buf[4] != speedOld) && (diff >= 3)) {
+  if (diff >= 3) {
     speedOld = Anemometer_buf[4];
     sendFirebase(ss++, pathSpeed, Anemometer_buf[4] * 3.6); // Convert speed m/s to km/h
     EEPROM.put(EEss, ss);
@@ -237,7 +237,7 @@ void readWind () {
   wind_deg = (Anemometer_dir_buf[3]>0) ? 256 + Anemometer_dir_buf[4] : Anemometer_dir_buf[4];
   diff = abs(wind_deg - directionOld);
 
-  if ((wind_deg != directionOld) && (diff >= 4)) {
+  if (diff >= 4) {
     directionOld = wind_deg;
     sendFirebase(sd++, pathDirection, wind_deg);
     EEPROM.put(EEsd, sd);
