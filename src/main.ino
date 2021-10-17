@@ -234,12 +234,7 @@ void readWind () {
   RS485Serial2.readBytes(Anemometer_dir_buf, 8);
 
   float wind_deg;
-  if (Anemometer_dir_buf[3] > 0) {
-    wind_deg = 256 + Anemometer_dir_buf[4];
-  }
-  else {
-    wind_deg = Anemometer_dir_buf[4];
-  }
+  wind_deg = (Anemometer_dir_buf[3]>0) ? 256 + Anemometer_dir_buf[4] : Anemometer_dir_buf[4];
   diff = wind_deg - directionOld;
   if (diff < 0) diff *= -1;
   if ((wind_deg != directionOld) && (diff >= 4)) {
