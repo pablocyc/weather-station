@@ -207,16 +207,16 @@ void loop() {
 
 void readWind () {
   int diff;
-  digitalWrite(RTS_pin, RS485Transmit);
   byte Anemometer_request[] = {0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x39};
+
+  digitalWrite(RTS_pin, RS485Transmit);
   RS485Serial.write(Anemometer_request, sizeof(Anemometer_request));
   RS485Serial.flush();
-
   digitalWrite(RTS_pin, RS485Receive);
+
   byte Anemometer_buf[8];
   RS485Serial.readBytes(Anemometer_buf, 8);
-  diff = Anemometer_buf[4] - speedOld;
-  diff = abs(diff);
+  diff = abs(Anemometer_buf[4] - speedOld);
 
   if ((Anemometer_buf[4] != speedOld) && (diff >= 3)) {
     speedOld = Anemometer_buf[4];
@@ -228,15 +228,15 @@ void readWind () {
   digitalWrite(RTS_pin, RS485Transmit);
   RS485Serial2.write(Anemometer_request, sizeof(Anemometer_request));
   RS485Serial2.flush();
-
   digitalWrite(RTS_pin, RS485Receive);
+
   byte Anemometer_dir_buf[8];
   RS485Serial2.readBytes(Anemometer_dir_buf, 8);
 
   float wind_deg;
   wind_deg = (Anemometer_dir_buf[3]>0) ? 256 + Anemometer_dir_buf[4] : Anemometer_dir_buf[4];
-  diff = wind_deg - directionOld;
-  diff = abs(diff);
+  diff = abs(wind_deg - directionOld);
+
   if ((wind_deg != directionOld) && (diff >= 4)) {
     directionOld = wind_deg;
     sendFirebase(sd++, pathDirection, wind_deg);
