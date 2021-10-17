@@ -216,7 +216,7 @@ void readWind () {
   byte Anemometer_buf[8];
   RS485Serial.readBytes(Anemometer_buf, 8);
   diff = Anemometer_buf[4] - speedOld;
-  if (diff < 0) diff *= -1;
+  diff = abs(diff);
 
   if ((Anemometer_buf[4] != speedOld) && (diff >= 3)) {
     speedOld = Anemometer_buf[4];
@@ -236,7 +236,7 @@ void readWind () {
   float wind_deg;
   wind_deg = (Anemometer_dir_buf[3]>0) ? 256 + Anemometer_dir_buf[4] : Anemometer_dir_buf[4];
   diff = wind_deg - directionOld;
-  if (diff < 0) diff *= -1;
+  diff = abs(diff);
   if ((wind_deg != directionOld) && (diff >= 4)) {
     directionOld = wind_deg;
     sendFirebase(sd++, pathDirection, wind_deg);
