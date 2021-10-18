@@ -2,6 +2,13 @@
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,windows,linux,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,windows,linux,macos
 
+### Platformio ###
+.pio
+.clang_complete
+.gcc-flags.json
+.ccls
+*/config.h
+
 ### Arduino ###
 src/config.h
 

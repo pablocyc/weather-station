@@ -16,6 +16,7 @@ Materials :
 1* AHT10 --> Integrated temperature and humidity sensor, i2C
 */
 
+#include "functions.h" //NEW HEADER BY PEDRO
 #include "config.h"   // header include, host and token to Firebase, SSID and password to WiFi connection
 #include <EEPROM.h>
 #include <SoftwareSerial.h>  // https://github.com/PaulStoffregen/SoftwareSerial
@@ -206,18 +207,18 @@ void loop() {
 
 void readWind () {
   int diff;
-  digitalWrite(RTS_pin, RS485Transmit);
   byte Anemometer_request[] = {0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x39};
+
+  digitalWrite(RTS_pin, RS485Transmit);
   RS485Serial.write(Anemometer_request, sizeof(Anemometer_request));
   RS485Serial.flush();
-
   digitalWrite(RTS_pin, RS485Receive);
+
   byte Anemometer_buf[8];
   RS485Serial.readBytes(Anemometer_buf, 8);
-  diff = Anemometer_buf[4] - speedOld;
-  if (diff < 0) diff *= -1;
+  diff = abs(Anemometer_buf[4] - speedOld);
 
-  if ((Anemometer_buf[4] != speedOld) && (diff >= 3)) {
+  if (diff >= 3) {
     speedOld = Anemometer_buf[4];
     sendFirebase(ss++, pathSpeed, Anemometer_buf[4] * 3.6); // Convert speed m/s to km/h
     EEPROM.put(EEss, ss);
@@ -227,21 +228,16 @@ void readWind () {
   digitalWrite(RTS_pin, RS485Transmit);
   RS485Serial2.write(Anemometer_request, sizeof(Anemometer_request));
   RS485Serial2.flush();
-
   digitalWrite(RTS_pin, RS485Receive);
+
   byte Anemometer_dir_buf[8];
   RS485Serial2.readBytes(Anemometer_dir_buf, 8);
 
   float wind_deg;
-  if (Anemometer_dir_buf[3] > 0) {
-    wind_deg = 256 + Anemometer_dir_buf[4];
-  }
-  else {
-    wind_deg = Anemometer_dir_buf[4];
-  }
-  diff = wind_deg - directionOld;
-  if (diff < 0) diff *= -1;
-  if ((wind_deg != directionOld) && (diff >= 4)) {
+  wind_deg = (Anemometer_dir_buf[3]>0) ? 256 + Anemometer_dir_buf[4] : Anemometer_dir_buf[4];
+  diff = abs(wind_deg - directionOld);
+
+  if (diff >= 4) {
     directionOld = wind_deg;
     sendFirebase(sd++, pathDirection, wind_deg);
     EEPROM.put(EEsd, sd);
@@ -319,6 +315,7 @@ String longMonth (int month) {
     case 12:
       return "december";
   }
+  return "Month not found!";
 }
 
 String isOneDigit(int digit) {

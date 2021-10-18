@@ -1,0 +1,10 @@
+// Edit this files with your own credentials
+#ifndef config_h
+#define config_h
+
+  String HostFirebase = "HOST_OF_FIREBASE"; // Firebase host
+  String TokenFirebase = "TOKEN_FIREBASE"; // Firebase token
+  String WifiSSID = "WIFI_SSID";
+  String WifiPASS = "WIFI_PASSWORD";
+
+#endif
