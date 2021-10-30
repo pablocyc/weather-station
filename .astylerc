@@ -4,6 +4,9 @@
 # Redirection
 #  The redirection option may be used to display the formatted file without updating:
 #    astyle --style=allman < OriginalSourceFile | less
+# To use:  astyle OriginalSourceFile --options=./.astylerc
+# Can be used on .ino files too
+# UNCOMMENT dry-run TO ACTUALLY MODIFY THE FILES
 
 style=mozilla #braces are broken from classes, structs, enums, and function definitions. Braces are attached to everything else, including namespaces, arrays, and statements within a function.
 indent=spaces=2 #indentations are 2 spaces
