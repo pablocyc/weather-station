@@ -1,7 +1,8 @@
 #!/bin/sh
 
 echo "git diff:"
-FICHEROS=`git diff --stat --cached --name-only origin/`git branch --show-current``
+CURRENT_BRANCH_NAME=`git branch --show-current`
+FICHEROS=`git diff --stat --cached --name-only origin/$CURRENT_BRANCH_NAME`
 if [ -z "${FICHEROS}" ]; then
   echo "Files not found"
 else
