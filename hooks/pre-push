@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "git diff:"
+FICHEROS=`git diff --name-only`
+if [ -z "${FICHEROS}" ]; then
+  echo "Files not found"
+else
+  echo "files are:"
+  echo "$FICHEROS"
+  echo "Running astyle"
+  astyle --options=./.astylerc ${FICHEROS}
+  echo "Formatted"
+fi
