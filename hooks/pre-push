@@ -3,6 +3,7 @@
 echo "git diff:"
 CURRENT_BRANCH_NAME=`git branch --show-current`
 FICHEROS=`git diff --stat --cached --name-only origin/$CURRENT_BRANCH_NAME`
+FICHEROS=`echo $FICHEROS | egrep "*\.cpp|*\.ino|*\.h"`
 if [ -z "${FICHEROS}" ]; then
   echo "Files not found"
 else
