@@ -5,11 +5,11 @@ CURRENT_BRANCH_NAME=`git branch --show-current`
 FICHEROS=`git diff --stat --cached --name-only origin/$CURRENT_BRANCH_NAME`
 FICHEROS=`echo $FICHEROS | egrep "*\.cpp|*\.ino|*\.h"`
 if [ -z "${FICHEROS}" ]; then
-  echo "Files not found"
+  echo "[astyle]: No source files (.cpp .ino .h) changed. Nothing to format"
 else
-  echo "files are:"
+  echo "[astyle]: files to format are:"
   echo "$FICHEROS"
-  echo "Running astyle"
+  echo "[astyle]: Running..."
   astyle --options=./.astylerc ${FICHEROS}
-  echo "Formatted"
+  echo "[astyle]: All formatted"
 fi
