@@ -1,4 +1,4 @@
-#include "functions.h"
+#include "functions.h" //dummy comment to test pre-push hook
 #include "config.h"   // header include, host and token to Firebase, SSID and password to WiFi connection
 
 #include "FirebaseESP8266.h"  // https://github.com/mobizt/Firebase-ESP8266
