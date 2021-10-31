@@ -6,7 +6,7 @@ _________________________________________________________________
 |       Any feedback is welcome                                 |
 |                                                               |
 _________________________________________________________________
-
+DUMMY comment to test pre-push hook
 Materials :
 1* ESP8266 (nodemcu v1.0) --> tested with IDE version 1.8.7 and 1.8.9
 1* wind sensor --> RS485 MODBUS protocol of communication
