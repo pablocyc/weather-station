@@ -3,8 +3,8 @@
 echo "git diff:"
 CURRENT_BRANCH_NAME=`git branch --show-current`
 FILES=`git diff --stat --cached --name-only origin/$CURRENT_BRANCH_NAME`
-FILES_TO_CHANGE=`echo $FILES | egrep "*\.cpp|*\.ino|*\.h"`
-if [ -z "${FILES_TO_CHANGE}" ]; then
+FILES=`echo $FILES | egrep -o '[a-zA-Z0-9\/-]*(\ino|\.cpp|\.h)' | tr '\n' ' '`
+if [ -z "${FILES}" ]; then
   echo "[astyle]: No source files (.cpp .ino .h) changed. Nothing to format"
 else
   echo "[astyle]: files to format are:"
