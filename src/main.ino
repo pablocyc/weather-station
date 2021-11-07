@@ -287,7 +287,8 @@ String readDate () {
 }
 
 String longMonth (int month) {
-  const char* months[12] = { "january",  "february", "march",  "abril",  "may",  "june",  "july",  "august",  "october",  "november",  "december" };
+  const char* months[12] = { "january",  "february", "march",  "abril",  "may",  "june",  "july",
+                             "august",  "october",  "november",  "december" };
   if (month < 1 || month > 12) return "Month not found!";
   return months[month-1];
 }
