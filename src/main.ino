@@ -174,18 +174,17 @@ void loop() {
     readWind();
     float diff, read;
     read = bme.readTemperature();
-    diff = read - tempOld;
-    if (diff < 0) diff *= -1;
-    if ((read != tempOld) && (diff >= 0.21) ) {
+    diff = abs(read - tempOld);
+    if (diff >= 0.21) {
       tempOld = read;
       sendFirebase(st++, pathTemp, read);
       EEPROM.put(EEst, st);
       EEPROM.commit();
     }
+
     read = bme.readHumidity();
-    diff = read - humOld;
-    if (diff < 0) diff *= -1;
-    if ((read != humOld) && (diff >= 1.9)) {
+    diff = abs(read - humOld);
+    if (diff >= 1.9) {
       humOld = read;
       sendFirebase(sh++, pathHum, read);
       EEPROM.put(EEsh, sh);
