@@ -153,9 +153,9 @@ void setup() {
 
 void loop() {
   if (Serial.available()) {
-    char read = Serial.read();
+    char serialData = Serial.read();
     // Reset EEPROM
-    if (read == 'r') {
+    if (serialData == 'r') {
       EEPROM.put(EEst, 0);
       EEPROM.put(EEsh, 0);
       EEPROM.put(EEsp, 0);
