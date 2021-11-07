@@ -1,6 +1,5 @@
 #!/bin/sh
 
-echo "git diff:"
 CURRENT_BRANCH_NAME=`git branch --show-current`
 FILES=`git diff --stat --cached --name-only origin/$CURRENT_BRANCH_NAME`
 FILES=`echo $FILES | egrep -o '[a-zA-Z0-9\/-]*(\.ino|\.cpp|\.h)' | tr '\n' ' '`
