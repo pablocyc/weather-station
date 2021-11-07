@@ -287,32 +287,8 @@ String readDate () {
 }
 
 String longMonth (int month) {
-  switch (month) {
-    case 1:
-      return "january";
-    case 2:
-      return "february";
-    case 3:
-      return "march";
-    case 4:
-      return "abril";
-    case 5:
-      return "may";
-    case 6:
-      return "june";
-    case 7:
-      return "july";
-    case 8:
-      return "august";
-    case 9:
-      return "september";
-    case 10:
-      return "october";
-    case 11:
-      return "november";
-    case 12:
-      return "december";
-  }
-  return "Month not found!";
+  const char* months[12] = { "january",  "february", "march",  "abril",  "may",  "june",  "july",  "august",  "october",  "november",  "december" };
+  if (month < 1 || month > 12) return "Month not found!";
+  return months[month-1];
 }
 
