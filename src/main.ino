@@ -316,10 +316,3 @@ String longMonth (int month) {
   return "Month not found!";
 }
 
-String isOneDigit(int digit) {
-  String value = String(digit);
-  if(digit < 10)
-    value = "0" + value;
-
-  return value;
-}
