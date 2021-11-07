@@ -199,7 +199,6 @@ void loop() {
       EEPROM.put(EEsp, sp);
       EEPROM.commit();
     }
-    //delay(2000);
   }
 }
 
