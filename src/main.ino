@@ -280,9 +280,9 @@ void sendFirebase (long sample, String path, float value) {
 }
 
 String readDate () {
-  String date = "20" + String(RTC.getYear()) + "-" + isOneDigit(RTC.getMonth(century)) + "-" + isOneDigit(RTC.getDate());
-  String time = isOneDigit(RTC.getHour(h12Flag, pmFlag)) + ":" + isOneDigit(RTC.getMinute()) + ":" + isOneDigit(RTC.getSecond());
-  String UTC = date + "T" + time + "Z";
+  char buff[21];
+  snprintf_P(buff, sizeof(buff), PSTR("20%02d-%02i-%02iT%02d:%02i:%02iZ"), RTC.getYear(), RTC.getMonth(century), RTC.getDate(), RTC.getHour(h12Flag, pmFlag), RTC.getMinute(), RTC.getSecond());
+  String UTC = String(buff);
   return UTC;
 }
 
