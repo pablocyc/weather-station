@@ -174,18 +174,17 @@ void loop() {
     readWind();
     float diff, read;
     read = bme.readTemperature();
-    diff = read - tempOld;
-    if (diff < 0) diff *= -1;
-    if ((read != tempOld) && (diff >= 0.21) ) {
+    diff = abs(read - tempOld);
+    if (diff >= 0.21) {
       tempOld = read;
       sendFirebase(st++, pathTemp, read);
       EEPROM.put(EEst, st);
       EEPROM.commit();
     }
+
     read = bme.readHumidity();
-    diff = read - humOld;
-    if (diff < 0) diff *= -1;
-    if ((read != humOld) && (diff >= 1.9)) {
+    diff = abs(read - humOld);
+    if (diff >= 1.9) {
       humOld = read;
       sendFirebase(sh++, pathHum, read);
       EEPROM.put(EEsh, sh);
@@ -200,7 +199,6 @@ void loop() {
       EEPROM.put(EEsp, sp);
       EEPROM.commit();
     }
-    //delay(2000);
   }
 }
 
@@ -281,47 +279,3 @@ void sendFirebase (long sample, String path, float value) {
   }
 }
 
-String readDate () {
-  String date = "20" + String(RTC.getYear()) + "-" + isOneDigit(RTC.getMonth(century)) + "-" + isOneDigit(RTC.getDate());
-  String time = isOneDigit(RTC.getHour(h12Flag, pmFlag)) + ":" + isOneDigit(RTC.getMinute()) + ":" + isOneDigit(RTC.getSecond());
-  String UTC = date + "T" + time + "Z";
-  return UTC;
-}
-
-String longMonth (int month) {
-  switch (month) {
-    case 1:
-      return "january";
-    case 2:
-      return "february";
-    case 3:
-      return "march";
-    case 4:
-      return "abril";
-    case 5:
-      return "may";
-    case 6:
-      return "june";
-    case 7:
-      return "july";
-    case 8:
-      return "august";
-    case 9:
-      return "september";
-    case 10:
-      return "october";
-    case 11:
-      return "november";
-    case 12:
-      return "december";
-  }
-  return "Month not found!";
-}
-
-String isOneDigit(int digit) {
-  String value = String(digit);
-  if(digit < 10)
-    value = "0" + value;
-
-  return value;
-}
