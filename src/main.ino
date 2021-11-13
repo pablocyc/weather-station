@@ -191,9 +191,8 @@ void loop() {
       EEPROM.commit();
     }
     read = bme.readPressure();
-    diff = read - pressOld;
-    if (diff < 0) diff *= -1;
-    if ((read != pressOld) && (diff >= 33)) {
+    diff = abs(read - pressOld);
+    if (diff >= 33) {
       pressOld = read;
       sendFirebase(sp++, pathPress, read);
       EEPROM.put(EEsp, sp);
