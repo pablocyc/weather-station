@@ -203,9 +203,9 @@ void loop() {
   }
 }
 
-void sendParameter(int parameter, int* oldValue, float threshold, byte EEDirectionCounter, int counter, String path)
+void sendParameter(float parameter, float* oldValue, float threshold, byte EEDirectionCounter, int counter, String path)
 {
-  float diff = abs(parameter - oldValue);
+  float diff = abs(parameter - *oldValue);
   if (diff >= threshold){
     *oldValue = parameter;
     sendFirebase(counter++, path, parameter);
