@@ -190,18 +190,29 @@ void loop() {
       EEPROM.put(EEsh, sh);
       EEPROM.commit();
     }
-    read = bme.readPressure();
-    diff = read - pressOld;
-    if (diff < 0) diff *= -1;
-    if ((read != pressOld) && (diff >= 33)) {
-      pressOld = read;
-      sendFirebase(sp++, pathPress, read);
-      EEPROM.put(EEsp, sp);
-      EEPROM.commit();
-    }
+   // read = bme.readPressure();
+   // diff = read - pressOld;
+   // if (diff < 0) diff *= -1;
+   // if ((read != pressOld) && (diff >= 33)) {
+   //   pressOld = read;
+   //   sendFirebase(sp++, pathPress, read);
+   //   EEPROM.put(EEsp, sp);
+   //   EEPROM.commit();
+   // }
+    sendParameter(bme.readPressure(), &pressOld, 33, EEsp, sp, pathPress);
   }
 }
 
+void sendParameter(int parameter, int* oldValue, float threshold, byte EEDirectionCounter, int counter, String path)
+{
+  float diff = abs(parameter - oldValue);
+  if (diff >= threshold){
+    *oldValue = parameter;
+    sendFirebase(counter++, path, parameter);
+    EEPROM.put(EEDirectionCounter, counter);
+    EEPROM.commit();
+  }
+}
 
 void readWind () {
   int diff;
