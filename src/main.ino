@@ -172,34 +172,8 @@ void loop() {
   if (millis() - currentTime > deltaTime) {
     currentTime = millis();
     readWind();
-    //float diff, read;
-    //read = bme.readTemperature();
-    //diff = abs(read - tempOld);
-    //if (diff >= 0.21) {
-    //  tempOld = read;
-    //  sendFirebase(st++, pathTemp, read);
-    //  EEPROM.put(EEst, st);
-    //  EEPROM.commit();
-    //}
     sendParameter(bme.readTemperature(), &tempOld, 0.21, EEst, st, pathTemp);
-    //read = bme.readHumidity();
-    //diff = abs(read - humOld);
-    //if (diff >= 1.9) {
-    //  humOld = read;
-    //  sendFirebase(sh++, pathHum, read);
-    //  EEPROM.put(EEsh, sh);
-    //  EEPROM.commit();
-    //}
     sendParameter(bme.readHumidity(), &humOld, 1.9, EEsh, sh, pathHum);
-   // read = bme.readPressure();
-   // diff = read - pressOld;
-   // if (diff < 0) diff *= -1;
-   // if ((read != pressOld) && (diff >= 33)) {
-   //   pressOld = read;
-   //   sendFirebase(sp++, pathPress, read);
-   //   EEPROM.put(EEsp, sp);
-   //   EEPROM.commit();
-   // }
     sendParameter(bme.readPressure(), &pressOld, 33, EEsp, sp, pathPress);
   }
 }
