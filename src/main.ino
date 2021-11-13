@@ -201,19 +201,32 @@ void loop() {
     }
   }
 }
+byte * readSoftSerial(SoftwareSerial &softSerial)
+{
+  byte Anemometer_request[] = {0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x39};
+  digitalWrite(RTS_pin, RS485Transmit);
+  softSerial.write(Anemometer_request, sizeof(Anemometer_request));
+  softSerial.flush();
+  digitalWrite(RTS_pin, RS485Receive);
 
+  static byte buff[8];
+  softSerial.readBytes(buff, 8);
+  return buff;
+}
 
 void readWind () {
   int diff;
   byte Anemometer_request[] = {0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x39};
-
-  digitalWrite(RTS_pin, RS485Transmit);
-  RS485Serial.write(Anemometer_request, sizeof(Anemometer_request));
-  RS485Serial.flush();
-  digitalWrite(RTS_pin, RS485Receive);
-
-  byte Anemometer_buf[8];
-  RS485Serial.readBytes(Anemometer_buf, 8);
+//
+//  digitalWrite(RTS_pin, RS485Transmit);
+//  RS485Serial.write(Anemometer_request, sizeof(Anemometer_request));
+//  RS485Serial.flush();
+//  digitalWrite(RTS_pin, RS485Receive);
+//
+//  byte Anemometer_buf[8];
+//  RS485Serial.readBytes(Anemometer_buf, 8);
+  byte *Anemometer_buf;
+  Anemometer_buf = readSoftSerial(RS485Serial);
   diff = abs(Anemometer_buf[4] - speedOld);
 
   if (diff >= 3) {
