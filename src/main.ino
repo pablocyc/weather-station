@@ -216,15 +216,7 @@ byte * readSoftSerial(SoftwareSerial &softSerial)
 
 void readWind () {
   int diff;
-  byte Anemometer_request[] = {0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x39};
-//
-//  digitalWrite(RTS_pin, RS485Transmit);
-//  RS485Serial.write(Anemometer_request, sizeof(Anemometer_request));
-//  RS485Serial.flush();
-//  digitalWrite(RTS_pin, RS485Receive);
-//
-//  byte Anemometer_buf[8];
-//  RS485Serial.readBytes(Anemometer_buf, 8);
+  //byte Anemometer_request[] = {0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x39};
   byte *Anemometer_buf;
   Anemometer_buf = readSoftSerial(RS485Serial);
   diff = abs(Anemometer_buf[4] - speedOld);
@@ -236,14 +228,16 @@ void readWind () {
     EEPROM.commit();
   }
 
-  digitalWrite(RTS_pin, RS485Transmit);
-  RS485Serial2.write(Anemometer_request, sizeof(Anemometer_request));
-  RS485Serial2.flush();
-  digitalWrite(RTS_pin, RS485Receive);
+  //digitalWrite(RTS_pin, RS485Transmit);
+  //RS485Serial2.write(Anemometer_request, sizeof(Anemometer_request));
+  //RS485Serial2.flush();
+  //digitalWrite(RTS_pin, RS485Receive);
 
-  byte Anemometer_dir_buf[8];
-  RS485Serial2.readBytes(Anemometer_dir_buf, 8);
+  //byte Anemometer_dir_buf[8];
+  //RS485Serial2.readBytes(Anemometer_dir_buf, 8);
 
+  byte *Anemometer_dir_buf;
+  Anemometer_dir_buf = readSoftSerial(RS485Serial2);
   float wind_deg;
   wind_deg = (Anemometer_dir_buf[3]>0) ? 256 + Anemometer_dir_buf[4] : Anemometer_dir_buf[4];
   diff = abs(wind_deg - directionOld);
