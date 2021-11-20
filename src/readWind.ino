@@ -11,3 +11,16 @@
 void ReadWind () {
   Serial.println("Not implemented");
 }
+
+byte * readSoftSerial(SoftwareSerial &softSerial)
+{
+  byte Anemometer_request[] = {0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x39};
+  digitalWrite(RTS_pin, RS485Transmit);
+  softSerial.write(Anemometer_request, sizeof(Anemometer_request));
+  softSerial.flush();
+  digitalWrite(RTS_pin, RS485Receive);
+
+  static byte buff[8];
+  softSerial.readBytes(buff, 8);
+  return buff;
+}
