@@ -190,33 +190,15 @@ void sendParameter(float parameter, float* oldValue, float threshold, byte EEDir
 }
 
 void readWind () {
-  int diff;
   byte *Anemometer_buf;
   Anemometer_buf = readSoftSerial(RS485Serial);
-  diff = abs(Anemometer_buf[4] - speedOld);
-
-  if (diff >= 3) {
-    speedOld = Anemometer_buf[4];
-    sendFirebase(ss++, pathSpeed, Anemometer_buf[4] * 3.6); // Convert speed m/s to km/h
-    EEPROM.put(EEss, ss);
-    EEPROM.commit();
-  }
+  sendParameter(Anemometer_buf[4], &speedOld, 3, EEss, ss, pathSpeed);
 
   byte *Anemometer_dir_buf;
   Anemometer_dir_buf = readSoftSerial(RS485Serial2);
   float wind_deg;
   wind_deg = (Anemometer_dir_buf[3]>0) ? 256 + Anemometer_dir_buf[4] : Anemometer_dir_buf[4];
-  diff = abs(wind_deg - directionOld);
-
-  if (diff >= 4) {
-    directionOld = wind_deg;
-    sendFirebase(sd++, pathDirection, wind_deg);
-    EEPROM.put(EEsd, sd);
-    EEPROM.commit();
-    Serial.print("WindDir - Send: ");
-    Serial.println(wind_deg);
-    Serial.println();
-  }
+  sendParameter(wind_deg, &directionOld, 4, EEsd, sd, pathDirection);
 }
 
 void sendFirebase (long sample, String path, float value) {
